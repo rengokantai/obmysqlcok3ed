@@ -81,3 +81,62 @@ IFNULL
 ```
 SELECT subject, test, IFNULL(score,'Unknown') AS 'score' FROM expt;
 ```
+######Create view
+```
+CREATE VIEW mail_view AS SELECT DATE_FORMAT(t,'%M %e, %Y') AS date_sent FROM mail;
+```
+use this view
+```
+SELECT date_sent, sender, size FROM mail_view WHERE size > 100000 ORDER BY size;
+```
+######skip and limit
+```
+SELECT ... FROM ... ORDER BY ... LIMIT 40, 20;
+SELECT FOUND_ROWS();   #last query return result number of rows
+```
+######“Wrong” Sort Order
+returns the names and birth dates for the four people born most recently
+```
+SELECT name, birth FROM profile ORDER BY birth DESC LIMIT 4;
+```
+in ascending order
+```
+SELECT * FROM (SELECT name, birth FROM profile ORDER BY birth DESC LIMIT 4) AS t ORDER BY birth;
+```
+######Calculating LIMIT Values from Expressions
+To construct a two-argument LIMIT clause, evaluate both expressions before placing them into the statement string.
+
+#####Chapter 4. Table Management
+######
+clone table structure
+```
+CREATE TABLE new_table LIKE original_table;
+```
+copy table contents
+```
+INSERT INTO new_table SELECT * FROM original_table;
+```
+######
+copy some columns:
+```
+INSERT INTO dst_tbl (integercol, stringcol) SELECT val, name FROM src_tbl;
+```
+create empty table
+```
+CREATE TABLE dst_tbl SELECT col1,col2 FROM src_tbl WHERE FALSE;
+```
+create prop
+```
+CREATE TABLE dst_tbl (PRIMARY KEY (id), INDEX(state,city))
+SELECT * FROM src_tbl;
+```
+others
+```
+CREATE TABLE dst_tbl (PRIMARY KEY (id)) SELECT * FROM src_tbl;
+ALTER TABLE dst_tbl MODIFY id INT UNSIGNED NOT NULL AUTO_INCREMENT;
+```
+######Creating Temporary Tables
+A temporary table can have the same name as a permanent table. In this case, the temporary table “hides” the permanent table for the duration of its existence,
+```
+CREATE TEMPORARY TABLE mail SELECT * FROM mail;
+```
