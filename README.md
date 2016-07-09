@@ -140,3 +140,47 @@ A temporary table can have the same name as a permanent table. In this case, the
 ```
 CREATE TEMPORARY TABLE mail SELECT * FROM mail;
 ```
+######Generating Unique Table Names
+get id
+```
+SELECT CONNECTION_ID();
+```
+set prepare, deallocate
+```
+SET @tbl_name = CONCAT('tmp_tbl_', CONNECTION_ID());
+SET @stmt = CONCAT('DROP TABLE IF EXISTS ', @tbl_name);
+PREPARE stmt FROM @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+SET @stmt = CONCAT('CREATE TABLE ', @tbl_name, ' (i INT)');
+PREPARE stmt FROM @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+```
+######Checking or Changing a Table Storage Engine
+check engine
+```
+mysql> select engine from information_schema.tables where table_schema='cookbook' and table_name = 'limbs';
+SHOW TABLE STATUS LIKE 'mail'\G
+```
+change engine
+```
+ALTER TABLE mail ENGINE = MyISAM;
+```
+######Copying a Table Using mysqldump
+```
+mysqldump db tb > a.sql
+```
+copy a dump to another database: two steps
+```
+mysqldump db1 tb > mail.sql
+mysql db2 < mail.sql
+```
+one step
+```
+mysqldump db1 tb | mysql -h other-host db2
+```
+or using ssh
+```
+mysqldump db1 tb | ssh other-host mysql db2
+```
