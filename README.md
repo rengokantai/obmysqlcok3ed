@@ -184,3 +184,144 @@ or using ssh
 ```
 mysqldump db1 tb | ssh other-host mysql db2
 ```
+#####Chapter 5. Working with Strings
+######String Properties
+```
+SHOW CHARACTER SET;
+```
+```
+SET @s = CONVERT('abc' USING ucs2);
+SELECT LENGTH(@s), CHAR_LENGTH(@s);
+```
+
+```
+SHOW COLLATION LIKE 'latin1%';
+```
+create column with charset
+```
+CREATE TABLE t (c CHAR(3) CHARACTER SET latin1);
+```
+case insensitive, case sensitive
+```
+SELECT c FROM t ORDER BY c COLLATE latin1_swedish_ci;
+SELECT c FROM t ORDER BY c COLLATE latin1_general_cs;
+```
+######
+```
+CREATE TABLE t (c1 CHAR(10), c2 VARCHAR(10));
+INSERT INTO t (c1,c2) VALUES('abc       ','abc       ');
+SELECT c1, c2, CHAR_LENGTH(c1), CHAR_LENGTH(c2) FROM t; # 3,10
+```
+create column with charset and collate
+```
+CREATE TABLE mytbl
+(
+  a VARCHAR(100) CHARACTER SET utf8 COLLATE utf8_danish_ci,
+  b VARCHAR(100) CHARACTER SET sjis COLLATE sjis_japanese_ci
+);
+```
+######Checking or Changing a String’s Character Set or Collation
+```
+SELECT USER(), CHARSET(USER()), COLLATION(USER());
+```
+```
+SET NAMES utf8 COLLATE 'utf8_bin';
+SELECT CHARSET('abc'), COLLATION('abc');
+```
+######
+To convert a string from one character set to another, use the CONVERT() function:
+```
+SET @s1 = _latin1 'my string', @s2 = CONVERT(@s1 USING utf8);
+SELECT CHARSET(@s1), CHARSET(@s2);
+```
+To change the collation of a string, use the COLLATE operator:
+```
+SET @s1 = _latin1 'my string', @s2 = @s1 COLLATE latin1_spanish_ci;
+SELECT COLLATION(@s1), COLLATION(@s2);
+```
+change char set USING
+```
+SELECT b,UPPER(CONVERT(b USING latin1)) AS upper,LOWER(CONVERT(b USING latin1)) AS lower FROM t;
+```
+function syntax
+```
+CREATE FUNCTION initial_cap (s VARCHAR(255)) RETURNS VARCHAR(255) DETERMINISTIC RETURN CONCAT(UPPER(LEFT(s,1)),MID(s,2));
+```
+#####23
+######Managing User Accounts
+```
+CREATE USER 'user_name'@'host_name' IDENTIFIED WITH 'sha256_password';
+SET old_passwords = 2;
+SET PASSWORD FOR 'user_name'@'host_name' = PASSWORD('password');
+```
+grant
+```
+GRANT FILE ON *.* TO 'user1'@'localhost';
+GRANT CREATE TEMPORARY TABLES, LOCK TABLES ON *.* TO 'user1'@'localhost';
+```
+grant colunm level
+```
+GRANT SELECT(User,Host), UPDATE(password_expired) ON mysql.user TO 'user1'@'localhost';
+REVOKE SELECT(User,Host), UPDATE(password_expired) ON mysql.user FROM 'user1'@'localhost';
+```
+procedure level
+```
+GRANT EXECUTE ON PROCEDURE cookbook.exec_stmt TO 'user1'@'localhost';
+REVOKE EXECUTE ON PROCEDURE cookbook.exec_stmt FROM 'user1'@'localhost';
+```
+show grants
+```
+SHOW GRANTS FOR 'user1'@'localhost';
+```
+rename user
+```
+RENAME USER 'currentuser'@'localhost' TO 'newuser'@'localhost';
+```
+enable a plugin (cannot enable last lines, cause error)
+```
+[mysqld]
+plugin-load-add=validate_password.so
+validate_password_length=10
+validate_password_mixed_case_count=1
+validate_password_number_count=2
+validate_password_special_char_count=1
+```
+######Checking Password Strength
+```
+SELECT VALIDATE_PASSWORD_STRENGTH('abc') ;
+```
+######Expiring Passwords
+```
+ALTER USER 'cbuser'@'localhost' PASSWORD EXPIRE;
+```
+batch expire all non-anoy accounts  (need to review)
+```
+CREATE PROCEDURE expire_all_passwords()
+BEGIN
+  DECLARE done BOOLEAN DEFAULT FALSE;
+  DECLARE account TEXT;
+  DECLARE cur CURSOR FOR
+    SELECT CONCAT(QUOTE(User),'@',QUOTE(Host)) AS account
+    FROM mysql.user WHERE User <> '';
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+  OPEN cur;
+  expire_loop: LOOP
+    FETCH cur INTO account;
+    IF done THEN
+      LEAVE expire_loop;
+    END IF;
+    CALL exec_stmt(CONCAT('ALTER USER ',account,' PASSWORD EXPIRE'));
+  END LOOP;
+  CLOSE cur;
+END;
+```
+######
+set password
+```
+SET PASSWORD = PASSWORD('pass');
+```
+set password for others
+```
+SET PASSWORD FOR 'user_name'@'host_name' = PASSWORD('pass');
+```
