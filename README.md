@@ -316,7 +316,7 @@ BEGIN
   CLOSE cur;
 END;
 ```
-######
+######Assigning Yourself a New Password
 set password
 ```
 SET PASSWORD = PASSWORD('pass');
@@ -324,4 +324,47 @@ SET PASSWORD = PASSWORD('pass');
 set password for others
 ```
 SET PASSWORD FOR 'user_name'@'host_name' = PASSWORD('pass');
+```
+
+######Finding and Fixing Insecure Accounts
+difference between the two hash formats
+```
+SET old_passwords = 0;
+SELECT OLD_PASSWORD('mypass') AS old, PASSWORD('mypass') AS new\G
+```
+ find weak accounts
+```
+SELECT User, Host, plugin, Password FROM mysql.user WHERE (plugin = 'mysql_native_password' AND Password = '') OR plugin IN ('','mysql_old_password');
+```
+assign a plugin and set a password, use comma
+```
+UPDATE mysql.user SET plugin = 'mysql_native_password', Password = PASSWORD('mypass') WHERE User = 'ke' AND Host = 'localhost';
+FLUSH PRIVILEGES;
+```
+######Disabling Use of Accounts with Pre-4.1 Passwords
+```
+SELECT @@secure_auth;
+```
+if returns 0, enable it
+```
+[mysqld]
+secure_auth=1
+```
+######Finding and Removing Anonymous Accounts
+```
+SELECT User, Host FROM mysql.user WHERE User = '';
+```
+######Modifying “Any Host” and “Many Host” Accounts
+rename user by change host:
+```
+RENAME USER 'user2'@'%.example.com' TO 'user2'@'ke.example.com';
+```
+using regexp
+```
+SELECT User, Host FROM mysql.user WHERE Host REGEXP '[%_]';
+```
+below are same
+```
+WHERE Host LIKE '%\%%' OR Host LIKE '%\_%';
+WHERE Host REGEXP '[%_]';
 ```
