@@ -185,6 +185,10 @@ or using ssh
 ```
 mysqldump db1 tb | ssh other-host mysql db2
 ```
+
+
+
+
 #####Chapter 5. Working with Strings
 ######String Properties
 ```
@@ -248,6 +252,22 @@ function syntax
 ```
 CREATE FUNCTION initial_cap (s VARCHAR(255)) RETURNS VARCHAR(255) DETERMINISTIC RETURN CONCAT(UPPER(LEFT(s,1)),MID(s,2));
 ```
+
+
+
+#####Chapter 6. Working with Dates and Times
+######Choosing a Temporal Data Type
+
+
+
+
+
+
+
+
+
+
+
 #####Chapter 22. Server Administration
 ######Configuring the Server
 syntax
