@@ -1,4 +1,5 @@
 #### obmysqlcok3ed
+INFORMATION_SCHEMA performance_schema  (case-sensitive)
 #####Chapter 1. Using the mysql
 ######Specifying mysql Command
 ```
@@ -247,7 +248,98 @@ function syntax
 ```
 CREATE FUNCTION initial_cap (s VARCHAR(255)) RETURNS VARCHAR(255) DETERMINISTIC RETURN CONCAT(UPPER(LEFT(s,1)),MID(s,2));
 ```
-#####23
+#####Chapter 22. Server Administration
+######Configuring the Server
+syntax
+```
+SET GLOBAL sort_buffer_size = 1024 * 256;
+SET SESSION sort_buffer_size = 1024 * 1024;
+```
+alternative syntax
+```
+SET @@GLOBAL.sort_buffer_size = 1024 * 256;
+SET @@SESSION.sort_buffer_size = 1024 * 1024;
+```
+######Managing the Plug-In Interface
+show plugin dic
+```
+SELECT @@plugin_dir;
+```
+######Controlling Server Logging
+mysql 5.7
+```
+[mysqld]
+log_error=err.log
+log_error_verbosity=1
+```
+```
+[mysqld]
+log-bin=binlog
+max_binlog_size=4G
+expire_logs_days=7
+```
+######Rotating or Expiring Logfiles
+```
+mysqladmin flush-logs
+```
+######Rotating Log Tables 
+delete old table
+```
+DELETE FROM mysql.general_log WHERE event_time < NOW() - INTERVAL 1 WEEK;
+```
+schedule event(very important,hard)
+```
+CREATE EVENT expire_general_log ON SCHEDULE EVERY 1 WEEKnDO DELETE FROM mysql.general_log WHERE event_time < NOW() - INTERVAL 1 WEEK;
+```
+######Monitoring the MySQL Server
+```
+SHOW GLOBAL STATUS LIKE 'Threads_connected';
+SELECT VARIABLE_VALUE FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE VARIABLE_NAME = 'Threads_connected';
+```
+vertical output: mysql -E
+```
+mysql -E -e "SHOW ENGINE INNODB STATUS" | grep "Free buffers"
+```
+```
+SHOW PROCESSLIST;
+```
+```
+mysqladmin ping/status
+```
+show uptime
+```
+SHOW GLOBAL STATUS LIKE 'Uptime';
+```
+how many queries
+```
+SHOW GLOBAL STATUS LIKE 'Queries';
+```
+wait timeout, default=8 hours
+```
+SELECT @@wait_timeout;
+SET wait_timeout = seconds;
+```
+
+key cached
+```
+SELECT @@innodb_buffer_pool_size, @@key_buffer_size;
+```
+or
+```
+SELECT * FROM INFORMATION_SCHEMA.GLOBAL_VARIABLES WHERE VARIABLE_NAME IN ('INNODB_BUFFER_POOL_SIZE','KEY_BUFFER_SIZE');
+```
+######Creating and Using Backups
+```
+mysqldump --routines --events --all-databases > dump.sql
+```
+ 
+
+
+
+
+
+
+#####Chapter 23. Security
 ######Managing User Accounts
 ```
 CREATE USER 'user_name'@'host_name' IDENTIFIED WITH 'sha256_password';
