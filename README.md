@@ -1,19 +1,19 @@
-#### obmysqlcok3ed
+# obmysqlcok3ed
 INFORMATION_SCHEMA performance_schema  (case-sensitive)
-#####Chapter 1. Using the mysql
-######Specifying mysql Command
+## Chapter 1. Using the mysql
+### Specifying mysql Command
 ```
 [client]
 host     = localhost
 user     = cbuser
 password = cbpass
 ```
-######Executing SQL Statements Interactively
+### Executing SQL Statements Interactively
 exucute multiple commands inline
 ```
 mysql -e "SELECT COUNT(*) FROM tb;SELECT NOW()" db
 ```
-######Executing SQL Statements Read from a File
+### Executing SQL Statements Read from a File
 ```
 mysql db < limbs.sql
 ```
@@ -27,7 +27,7 @@ CREATE TABLE limbs
 
 INSERT INTO limbs (thing,legs) VALUES('human',2);
 ```
-######Controlling mysql Output
+### Controlling mysql Output
 ```
 mysql -H -e "SELECT * FROM limbs WHERE legs=0" cookbook
 ```
@@ -61,8 +61,8 @@ SELECT @last_id := LAST_INSERT_ID();
 SET @max_limbs = (SELECT MAX(arms+legs) FROM limbs);
 SET @x = 1, @X = 2; SELECT @x, @X;
 ```
-#####Chapter 3. Selecting Data from Tables
-######Naming Query Result Columns
+## Chapter 3. Selecting Data from Tables
+### Naming Query Result Columns
 ```
 SELECT DATE_FORMAT(t,'%M %e, %Y') AS date_sent, CONCAT(srcuser,'@',srchost) AS sender,size FROM mail;
 ```
@@ -70,11 +70,11 @@ You cannot refer to column aliases in a WHERE clause.
 ```
 SELECT t, srcuser, dstuser, size/1024 AS kilobytes FROM mail WHERE size/1024 > 500;
 ```
-######Removing Duplicate Rows
+### Removing Duplicate Rows
 ```
 SELECT DISTINCT YEAR(t), MONTH(t), DAYOFMONTH(t) FROM mail;
 ```
-######NULL
+### NULL
 ```
 SELECT * FROM expt WHERE score IS NOT NULL;
 ```
@@ -82,7 +82,7 @@ IFNULL
 ```
 SELECT subject, test, IFNULL(score,'Unknown') AS 'score' FROM expt;
 ```
-######Create view
+### Create view
 ```
 CREATE VIEW mail_view AS SELECT DATE_FORMAT(t,'%M %e, %Y') AS date_sent FROM mail;
 ```
@@ -90,12 +90,12 @@ use this view
 ```
 SELECT date_sent, sender, size FROM mail_view WHERE size > 100000 ORDER BY size;
 ```
-######skip and limit
+### skip and limit
 ```
 SELECT ... FROM ... ORDER BY ... LIMIT 40, 20;
 SELECT FOUND_ROWS();   #last query return result number of rows
 ```
-######“Wrong” Sort Order
+### "Wrong" Sort Order
 returns the names and birth dates for the four people born most recently
 ```
 SELECT name, birth FROM profile ORDER BY birth DESC LIMIT 4;
@@ -104,12 +104,11 @@ in ascending order
 ```
 SELECT * FROM (SELECT name, birth FROM profile ORDER BY birth DESC LIMIT 4) AS t ORDER BY birth;
 ```
-######Calculating LIMIT Values from Expressions
+### Calculating LIMIT Values from Expressions
 To construct a two-argument LIMIT clause, evaluate both expressions before placing them into the statement string.
 
-#####Chapter 4. Table Management
-######
-clone table structure
+## Chapter 4. Table Management
+### clone table structure
 ```
 CREATE TABLE new_table LIKE original_table;
 ```
@@ -117,36 +116,35 @@ copy table contents
 ```
 INSERT INTO new_table SELECT * FROM original_table;
 ```
-######
-copy some columns:
+### copy some columns:
 ```
 INSERT INTO dst_tbl (integercol, stringcol) SELECT val, name FROM src_tbl;
 ```
-create empty table
+#### create empty table
 ```
 CREATE TABLE dst_tbl SELECT col1,col2 FROM src_tbl WHERE FALSE;
 ```
-create prop
+#### create prop
 ```
 CREATE TABLE dst_tbl (PRIMARY KEY (id), INDEX(state,city))
 SELECT * FROM src_tbl;
 ```
-others
+#### others
 ```
 CREATE TABLE dst_tbl (PRIMARY KEY (id)) SELECT * FROM src_tbl;
 ALTER TABLE dst_tbl MODIFY id INT UNSIGNED NOT NULL AUTO_INCREMENT;
 ```
-######Creating Temporary Tables
+### Creating Temporary Tables
 A temporary table can have the same name as a permanent table. In this case, the temporary table “hides” the permanent table for the duration of its existence,
 ```
 CREATE TEMPORARY TABLE mail SELECT * FROM mail;
 ```
-######Generating Unique Table Names
+### Generating Unique Table Names
 get id
 ```
 SELECT CONNECTION_ID();
 ```
-set prepare, deallocate
+#### set prepare, deallocate
 ```
 SET @tbl_name = CONCAT('tmp_tbl_', CONNECTION_ID());
 SET @stmt = CONCAT('DROP TABLE IF EXISTS ', @tbl_name);
@@ -158,7 +156,7 @@ PREPARE stmt FROM @stmt;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 ```
-######Checking or Changing a Table Storage Engine
+### Checking or Changing a Table Storage Engine
 check engine
 ```
 mysql> select engine from information_schema.tables where table_schema='cookbook' and table_name = 'limbs';
@@ -168,7 +166,7 @@ change engine
 ```
 ALTER TABLE mail ENGINE = MyISAM;
 ```
-######Copying a Table Using mysqldump
+### Copying a Table Using mysqldump
 ```
 mysqldump db tb > a.sql
 ```
@@ -189,8 +187,8 @@ mysqldump db1 tb | ssh other-host mysql db2
 
 
 
-#####Chapter 5. Working with Strings
-######String Properties
+## Chapter 5. Working with Strings
+### String Properties
 ```
 SHOW CHARACTER SET;
 ```
@@ -211,7 +209,7 @@ case insensitive, case sensitive
 SELECT c FROM t ORDER BY c COLLATE latin1_swedish_ci;
 SELECT c FROM t ORDER BY c COLLATE latin1_general_cs;
 ```
-######
+#### sub
 ```
 CREATE TABLE t (c1 CHAR(10), c2 VARCHAR(10));
 INSERT INTO t (c1,c2) VALUES('abc       ','abc       ');
@@ -225,7 +223,7 @@ CREATE TABLE mytbl
   b VARCHAR(100) CHARACTER SET sjis COLLATE sjis_japanese_ci
 );
 ```
-######Checking or Changing a String’s Character Set or Collation
+### Checking or Changing a String’s Character Set or Collation
 ```
 SELECT USER(), CHARSET(USER()), COLLATION(USER());
 ```
@@ -233,8 +231,7 @@ SELECT USER(), CHARSET(USER()), COLLATION(USER());
 SET NAMES utf8 COLLATE 'utf8_bin';
 SELECT CHARSET('abc'), COLLATION('abc');
 ```
-######
-To convert a string from one character set to another, use the CONVERT() function:
+#### To convert a string from one character set to another, use the CONVERT() function:
 ```
 SET @s1 = _latin1 'my string', @s2 = CONVERT(@s1 USING utf8);
 SELECT CHARSET(@s1), CHARSET(@s2);
@@ -255,8 +252,8 @@ CREATE FUNCTION initial_cap (s VARCHAR(255)) RETURNS VARCHAR(255) DETERMINISTIC 
 
 
 
-#####Chapter 6. Working with Dates and Times
-######Choosing a Temporal Data Type
+## Chapter 6. Working with Dates and Times
+### Choosing a Temporal Data Type
 
 
 
@@ -268,8 +265,8 @@ CREATE FUNCTION initial_cap (s VARCHAR(255)) RETURNS VARCHAR(255) DETERMINISTIC 
 
 
 
-#####Chapter 22. Server Administration
-######Configuring the Server
+## Chapter 22. Server Administration
+### Configuring the Server
 syntax
 ```
 SET GLOBAL sort_buffer_size = 1024 * 256;
@@ -280,12 +277,12 @@ alternative syntax
 SET @@GLOBAL.sort_buffer_size = 1024 * 256;
 SET @@SESSION.sort_buffer_size = 1024 * 1024;
 ```
-######Managing the Plug-In Interface
+### Managing the Plug-In Interface
 show plugin dic
 ```
 SELECT @@plugin_dir;
 ```
-######Controlling Server Logging
+### Controlling Server Logging
 mysql 5.7
 ```
 [mysqld]
@@ -298,11 +295,11 @@ log-bin=binlog
 max_binlog_size=4G
 expire_logs_days=7
 ```
-######Rotating or Expiring Logfiles
+### Rotating or Expiring Logfiles
 ```
 mysqladmin flush-logs
 ```
-######Rotating Log Tables 
+### Rotating Log Tables 
 delete old table
 ```
 DELETE FROM mysql.general_log WHERE event_time < NOW() - INTERVAL 1 WEEK;
@@ -311,7 +308,7 @@ schedule event(very important,hard)
 ```
 CREATE EVENT expire_general_log ON SCHEDULE EVERY 1 WEEKnDO DELETE FROM mysql.general_log WHERE event_time < NOW() - INTERVAL 1 WEEK;
 ```
-######Monitoring the MySQL Server
+### Monitoring the MySQL Server
 ```
 SHOW GLOBAL STATUS LIKE 'Threads_connected';
 SELECT VARIABLE_VALUE FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE VARIABLE_NAME = 'Threads_connected';
@@ -348,7 +345,7 @@ or
 ```
 SELECT * FROM INFORMATION_SCHEMA.GLOBAL_VARIABLES WHERE VARIABLE_NAME IN ('INNODB_BUFFER_POOL_SIZE','KEY_BUFFER_SIZE');
 ```
-######Creating and Using Backups
+### Creating and Using Backups
 ```
 mysqldump --routines --events --all-databases > dump.sql
 ```
@@ -359,8 +356,8 @@ mysqldump --routines --events --all-databases > dump.sql
 
 
 
-#####Chapter 23. Security
-######Managing User Accounts
+## Chapter 23. Security
+### Managing User Accounts
 ```
 CREATE USER 'user_name'@'host_name' IDENTIFIED WITH 'sha256_password';
 SET old_passwords = 2;
@@ -398,11 +395,11 @@ validate_password_mixed_case_count=1
 validate_password_number_count=2
 validate_password_special_char_count=1
 ```
-######Checking Password Strength
+### Checking Password Strength
 ```
 SELECT VALIDATE_PASSWORD_STRENGTH('abc') ;
 ```
-######Expiring Passwords
+### Expiring Passwords
 ```
 ALTER USER 'cbuser'@'localhost' PASSWORD EXPIRE;
 ```
@@ -428,7 +425,7 @@ BEGIN
   CLOSE cur;
 END;
 ```
-######Assigning Yourself a New Password
+### Assigning Yourself a New Password
 set password
 ```
 SET PASSWORD = PASSWORD('pass');
@@ -438,7 +435,7 @@ set password for others
 SET PASSWORD FOR 'user_name'@'host_name' = PASSWORD('pass');
 ```
 
-######Finding and Fixing Insecure Accounts
+### Finding and Fixing Insecure Accounts
 difference between the two hash formats
 ```
 SET old_passwords = 0;
@@ -453,7 +450,7 @@ assign a plugin and set a password, use comma
 UPDATE mysql.user SET plugin = 'mysql_native_password', Password = PASSWORD('mypass') WHERE User = 'ke' AND Host = 'localhost';
 FLUSH PRIVILEGES;
 ```
-######Disabling Use of Accounts with Pre-4.1 Passwords
+### Disabling Use of Accounts with Pre-4.1 Passwords
 ```
 SELECT @@secure_auth;
 ```
@@ -462,11 +459,11 @@ if returns 0, enable it
 [mysqld]
 secure_auth=1
 ```
-######Finding and Removing Anonymous Accounts
+### Finding and Removing Anonymous Accounts
 ```
 SELECT User, Host FROM mysql.user WHERE User = '';
 ```
-######Modifying “Any Host” and “Many Host” Accounts
+### Modifying “Any Host” and “Many Host” Accounts
 rename user by change host:
 ```
 RENAME USER 'user2'@'%.example.com' TO 'user2'@'ke.example.com';
